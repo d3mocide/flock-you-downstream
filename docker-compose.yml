@@ -1,0 +1,73 @@
+# FlockYou API - Docker Compose Configuration
+# 
+# Usage:
+#   Start:    docker compose up -d
+#   Stop:     docker compose down
+#   Logs:     docker compose logs -f
+#   Rebuild:  docker compose up -d --build
+
+services:
+  flockyou-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: flockyou-api
+    restart: unless-stopped
+    privileged: true
+    ports:
+      - "5000:5000"
+    volumes:
+      # Persist detection data and settings
+      - ./backend/data:/app/data
+      # Persist exports
+      - ./backend/exports:/app/exports
+    environment:
+      - SECRET_KEY=${SECRET_KEY:-flockyou_prod_key_2024}
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    
+    # ============================================================
+    # SERIAL PORT ACCESS (Linux/Mac only)
+    # ============================================================
+    # Uncomment the 'devices' section below to pass through USB
+    # serial ports to the container.
+    #
+    # For Linux, find your device with: ls /dev/ttyUSB* /dev/ttyACM*
+    # For Mac, find your device with: ls /dev/cu.*
+    #
+    # Example for GPS on /dev/ttyUSB0 and Flock on /dev/ttyUSB1:
+    # devices:
+    #   - /dev/ttyUSB0:/dev/ttyUSB0
+    #   - /dev/ttyUSB1:/dev/ttyUSB1
+    #
+    # ============================================================
+    # WINDOWS USERS (USB Access):
+    # ============================================================
+    # Since you have usbipd installed, you can attach USB devices 
+    # to WSL2 to make them available to Docker:
+    #
+    # 1. List devices in PowerShell (Admin):
+    #    usbipd list
+    #
+    # 2. Bind the device (if not shared):
+    #    usbipd bind --busid <BUSID>
+    #
+    # 3. Attach to WSL:
+    #    usbipd attach --wsl --busid <BUSID>
+    #
+    # The device will then appear as /dev/ttyUSBx or /dev/ttyACMx
+    # inside the container (because of privileged: true).
+    #
+    # Alternative (Native):
+    #    start.bat native
+    # ============================================================
+
+# Named volumes for data persistence (optional, uncomment if preferred)
+# volumes:
+#   flockyou-data:
+#   flockyou-exports:

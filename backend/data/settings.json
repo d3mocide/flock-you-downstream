@@ -1,0 +1,5 @@
+{
+  "gps_port": "",
+  "flock_port": "COM6",
+  "filter": "all"
+}
